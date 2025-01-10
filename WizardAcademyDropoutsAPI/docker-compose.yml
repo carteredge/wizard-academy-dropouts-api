@@ -1,0 +1,22 @@
+services:
+  api:
+    container_name: api
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - 8443:8080
+  database:
+    image: 'mcr.microsoft.com/mssql/server:latest'
+    container_name: db
+    ports:
+      - 1433:1433
+    env_file:
+      - .env
+    environment:
+      ACCEPT_EULA: Y
+    # networks:
+    #   - db-network
+  
+# networks:
+#   db-network:
+#     driver: bridge
