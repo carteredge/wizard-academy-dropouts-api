@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WizardAcademyDropouts.Domain;
 
@@ -10,9 +11,11 @@ using WizardAcademyDropouts.Domain;
 namespace WizardAcademyDropouts.Migrations
 {
     [DbContext(typeof(DropoutsDBContext))]
-    partial class DropoutsDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250116023535_AddUserIdToCharacter")]
+    partial class AddUserIdToCharacter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

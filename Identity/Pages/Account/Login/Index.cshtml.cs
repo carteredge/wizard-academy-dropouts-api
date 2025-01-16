@@ -7,6 +7,7 @@ using Duende.IdentityServer.Models;
 using Duende.IdentityServer.Services;
 using Duende.IdentityServer.Stores;
 using Duende.IdentityServer.Test;
+using Identity.Helpers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -134,9 +135,10 @@ public class Index : PageModel
                     // we can trust model.ReturnUrl since GetAuthorizationContextAsync returned non-null
                     return Redirect(Input.ReturnUrl ?? "~/");
                 }
-
                 // request for a local page
-                if (Url.IsLocalUrl(Input.ReturnUrl))
+                if (Url.IsLocalUrl(Input.ReturnUrl) ||
+                    (!string.IsNullOrEmpty(Input.ReturnUrl) &&
+                        UrlHelper.GetAllowedUrls().Contains(Input.ReturnUrl)))
                 {
                     return Redirect(Input.ReturnUrl);
                 }

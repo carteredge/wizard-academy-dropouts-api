@@ -2,7 +2,7 @@
 namespace WizardAcademyDropouts.Middleware;
 
 using System.Net;
-
+using Azure;
 
 public class ResponseHandlerMiddleware
 {

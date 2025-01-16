@@ -1,5 +1,6 @@
 namespace WizardAcademyDropouts.Services;
 
+using System.Security.Claims;
 using AutoMapper;
 using Domain;
 using Domain.Entities;
@@ -18,14 +19,18 @@ public class CharacterService
         _mapper = mapper;
     }
 
-    public async Task AddOrUpdate([FromBody] CharacterDTO characterDTO)
+    public async Task AddOrUpdate([FromBody] CharacterDTO characterDTO, ClaimsPrincipal claimsPrincipal)
     {
-        // TODO: User handling
+        // TODO: User handling if update
         var character = _mapper.Map<Character>(characterDTO);
+        
         if (!character.IsNew)
         {
             _context.Items.RemoveRange(_context.Items.Where(i => i.CharacterId == character.Id));
         }
+        character.FailureId = character.Failure?.Id ?? 0;
+        character.KnackId = character.Knack?.Id ?? 0;
+        character.UserId = int.Parse(claimsPrincipal.Claims.First(claim => claim.Type == "sub").Value);
         _context.Characters.Update(character);
         await _context.SaveChangesAsync();
         return;
@@ -54,7 +59,9 @@ public static class CharacterServiceExtensions {
     {
         app.MapGet("/characters", (CharacterService service) => service.GetAll());
         app.MapGet("/characters/{id}", (CharacterService service, int id) => service.GetById(id));
-        app.MapPost("/characters", (CharacterService service, CharacterDTO characterDTO) => service.AddOrUpdate(characterDTO));
+        app.MapPost("/characters",
+            (CharacterService service, CharacterDTO characterDTO, ClaimsPrincipal claimsPrincipal) =>
+                service.AddOrUpdate(characterDTO, claimsPrincipal)).RequireAuthorization();
         return app;
     }
 }

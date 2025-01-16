@@ -44,6 +44,8 @@ public class Character : EntityBase
     
     public ICollection<Item> Inventory { get; set; } = new List<Item>();
 
+    public int UserId { get; set; }
+
     public Character(
         int id,
         string name,
@@ -56,7 +58,8 @@ public class Character : EntityBase
         Grade enchantment,
         Grade illusion,
         Grade naturalism,
-        Grade necromancy)
+        Grade necromancy,
+        int userId)
     {
         Id = id;
         Name = name;
@@ -71,6 +74,7 @@ public class Character : EntityBase
         Naturalism = naturalism;
         Necromancy = necromancy;
         Inventory = new List<Item>();
+        UserId = userId;
     }
 
     public Character() {}

@@ -1,19 +1,60 @@
 using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using WizardAcademyDropouts.Domain;
 using WizardAcademyDropouts.Maps;
 using WizardAcademyDropouts.Middleware;
 using WizardAcademyDropouts.Services;
+using DotNetEnv;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // builder.Services.AddIdentityServer(/*options => { }*/);
-builder.Services.AddAuthentication()
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = "cookie";
+        options.DefaultChallengeScheme = "oidc";
+    })
+    .AddCookie("cookie", options =>
+    {
+        options.Cookie.Name = "DropoutsCookie";
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+    })
+    .AddOpenIdConnect("oidc", options =>
     {
         options.Authority = "https://localhost:5001"; // TODO: Get from env
-        options.TokenValidationParameters.ValidateAudience = false;
+        options.ClientId = "web";
+        options.ClientSecret = Environment.GetEnvironmentVariable("DropoutsIdentityClientSecret");
+        // options.ClientSecret = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("DropoutsIdentityClientSecret"))).Select(item => item.ToString("x2")).ToString();
+        options.Scope.Clear();
+        options.Scope.Add("openid");
+        options.Scope.Add("email");
+        // options.Scope.Add("dropoutsApi");
+        options.MapInboundClaims = false; // Don't rename claim types
+        options.SaveTokens = true;
+        options.ResponseType = "code";
+        options.UsePkce = true;
     });
+    // .AddJwtBearer(options =>
+    // {
+    //     options.Authority = "https://localhost:5001"; // TODO: Get from env
+    //     options.TokenValidationParameters.ValidateAudience = false;
+    // });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("allowSpecificOrigins", builder =>
+    {
+        builder.AllowCredentials();
+        builder.AllowAnyMethod();
+        builder.AllowAnyHeader();
+        builder.WithOrigins("https://localhost:8081"); // TODO: Get from env
+    });
+});
 builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -46,11 +87,10 @@ builder.Services.AddScoped<CharacterService>();
 var app = builder.Build();
 
 app.UseRouting();
-
-
-
-// app.UseIdentityServer();
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseCors("allowSpecificOrigins");
 
 app.UseResponseHandler();
 

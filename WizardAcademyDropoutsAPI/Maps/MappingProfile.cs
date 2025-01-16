@@ -15,7 +15,8 @@ public class MappingProfile : Profile
         CreateMap<Character, CharacterDTO>()
             .ReverseMap()
             .ForMember(dest => dest.Inventory, opt => opt.MapFrom(src =>
-            src.Inventory.Select(item => new Item(0, item, src.Id))));
+            src.Inventory.Where(item => !string.IsNullOrWhiteSpace(item))
+                .Select(item => new Item(0, item, src.Id))));
         CreateMap<Character, CharacterListItemDTO>();
     }
 }
